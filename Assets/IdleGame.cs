@@ -63,13 +63,15 @@ public class IdleGame  : MonoBehaviour
     public Text gemsBoostText;
     public Text gemsToGetText;
 
-    public Image clickUpgrade1Bar;
-
     public CanvasGroup mainMenuGroup;
     public CanvasGroup upgradesGroup;
     public int tabSwitcher;
 
     public GameObject settings;
+    public Image clickUpgrade1Bar;
+    public Image clickUpgrade1BarSmooth;
+    public BigDouble clickUpgrade1BarTemp;
+
 
     public void Start()
     {
@@ -114,19 +116,14 @@ public class IdleGame  : MonoBehaviour
 
         // Click Upgrade Exponant Starts
 
-        string clickUpgrade1CostString;
         var clickUpgrade1Cost = 10 * Pow(1.07, data.clickUpgrade1Level);
-        clickUpgrade1CostString = NotationMethod(clickUpgrade1Cost, "F0");
+        var clickUpgrade1CostString = NotationMethod(clickUpgrade1Cost, "F0");
+        var clickUpgrade1LevelString = NotationMethod(data.clickUpgrade1Level, "F0");
 
-        string clickUpgrade1LevelString;
-        clickUpgrade1LevelString = NotationMethod(data.clickUpgrade1Level, "F0");
-
-        string clickUpgrade2CostString;
         var clickUpgrade2Cost = 25 * Pow(1.07, data.clickUpgrade2Level);
-        clickUpgrade2CostString = NotationMethod(clickUpgrade2Cost, "F0");
+        var clickUpgrade2CostString = NotationMethod(clickUpgrade2Cost, "F0");
 
-        string clickUpgrade2LevelString;
-        clickUpgrade2LevelString = NotationMethod(data.clickUpgrade2Level, "F0");
+        var clickUpgrade2LevelString = NotationMethod(data.clickUpgrade2Level, "F0");
 
 
         clickUpgrade1Text.text = "Click UPG 1\nCost: " + clickUpgrade1CostString + " Money\nPower: +1 Click\nLevel: " + clickUpgrade1LevelString;
