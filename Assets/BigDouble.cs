@@ -389,6 +389,16 @@ namespace BreakInfinity
             return new BigDouble(value);
         }
 
+        public static explicit operator float(BigDouble value)
+        {
+            return (float) value.ToDouble();
+        }
+
+        public static explicit operator int(BigDouble value)
+        {
+            return (int) value.ToDouble();
+        }
+
         public static BigDouble operator -(BigDouble value)
         {
             return Negate(value);
