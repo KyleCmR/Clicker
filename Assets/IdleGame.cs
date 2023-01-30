@@ -28,6 +28,10 @@ public class PlayerData
     public float achLevel1;
     public float achLevel2;
 
+    //Events
+    public BigDouble eventTokens;
+    public float[] eventCooldown = new float[7]; 
+
     public PlayerData() 
     { 
          FullReset();
@@ -49,6 +53,10 @@ public class PlayerData
 
         achLevel1= 0;
         achLevel2= 0;
+
+        eventTokens = 0;
+        for (var i = 0; i < eventCooldown.Length - 1; i++)
+            eventCooldown[i] = 0;
     }
 }
 
@@ -75,6 +83,7 @@ public class IdleGame : MonoBehaviour
     public Canvas mainMenuGroup;
     public Canvas upgradesGroup;
     public Canvas achievementsGroup;
+    public Canvas eventsGroup;
     public int tabSwitcher;
 
     public GameObject settings;
@@ -422,23 +431,28 @@ public class IdleGame : MonoBehaviour
     }
     public void ChangeTabs(string id)
     {
+        DisableAll();
         switch (id)
         {
             case "upgrades":
-                mainMenuGroup.gameObject.SetActive(false);
                 upgradesGroup.gameObject.SetActive(true);
-                achievementsGroup.gameObject.SetActive(false);
                 break;
             case "main":
                 mainMenuGroup.gameObject.SetActive(true);
-                upgradesGroup.gameObject.SetActive(false);
-                achievementsGroup.gameObject.SetActive(false);
                 break;
             case "achievements":
-                mainMenuGroup.gameObject.SetActive(false);
-                upgradesGroup.gameObject.SetActive(false);
                 achievementsGroup.gameObject.SetActive(true);
                 break;
+            case "events":
+                eventsGroup.gameObject.SetActive(true);
+                break;
+        }
+        void DisableAll()
+        {
+            mainMenuGroup.gameObject.SetActive(false);
+            upgradesGroup.gameObject.SetActive(false);
+            achievementsGroup.gameObject.SetActive(false);
+            eventsGroup.gameObject.SetActive(false);
         }
     }
     public void FullReset()
