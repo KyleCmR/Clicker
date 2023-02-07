@@ -30,7 +30,8 @@ public class PlayerData
 
     //Events
     public BigDouble eventTokens;
-    public float[] eventCooldown = new float[7]; 
+    public float[] eventCooldown = new float[7];
+    public int eventActiveID;
 
     public PlayerData() 
     { 
@@ -57,12 +58,14 @@ public class PlayerData
         eventTokens = 0;
         for (var i = 0; i < eventCooldown.Length - 1; i++)
             eventCooldown[i] = 0;
+        eventActiveID = 0;
     }
 }
 
 public class IdleGame : MonoBehaviour
 {
     public PlayerData data;
+    public EventManager events;
 
     // Texts
     public Text coinsText;
@@ -119,6 +122,7 @@ public class IdleGame : MonoBehaviour
         tabSwitcher = 0;
 
         SaveSystem.LoadPlayer(ref data);
+        events.StartEvents();
     }
 
 
@@ -134,7 +138,7 @@ public class IdleGame : MonoBehaviour
         // The Higer the > 1e15 is the longer it takes to ear peels
         data.gemsToGet = 150 * Sqrt(data.coins / 1e7);
         data.gemBoost = (data.gems * 0.05) + 1; //0.02
-        data.coinsPerSecond = (data.productionUpgrade1Level + (data.productionUpgrade2Power * data.productionUpgrade2Level)) * data.gemBoost;
+        data.coinsPerSecond = (data.productionUpgrade1Level + (data.productionUpgrade2Power * data.productionUpgrade2Level)) * data.gemBoost * events.eventTokenBoost;
 
         coinsText.text = "$" + NotationMethod(data.coins, "F0");
         coinsPerSecText.text = "$" + NotationMethod(data.coinsPerSecond, "F0") + "/s";
@@ -170,8 +174,8 @@ public class IdleGame : MonoBehaviour
             clickUpgrade1MaxText.text = "Buy Max (" + BuyClickUpgrade1MaxCount() + ")";
             clickUpgrade2MaxText.text = "Buy Max (" + BuyClickUpgrade2MaxCount() + ")";
 
-            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + data.gemBoost.ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
-            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * data.gemBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
+            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + (data.gemBoost * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
+            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * data.gemBoost * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
             productionUpgrade1MaxText.text = BuyMaxFormat(BuyProductionUpgrade1MaxCount());
             productionUpgrade2MaxText.text = BuyMaxFormat(BuyProductionUpgrade2MaxCount());
         }
@@ -281,8 +285,8 @@ public class IdleGame : MonoBehaviour
     // Кнопки
     public void Click()
     {
-        data.coins += data.coinsClickValue;
-        data.coinsCollected += data.coinsClickValue;
+        data.coins += data.coinsClickValue * events.eventTokenBoost;
+        data.coinsCollected += data.coinsClickValue * events.eventTokenBoost;
     }
 
     public void BuyUpgrade(string upgradeID)
