@@ -66,7 +66,7 @@ public class EventManager : MonoBehaviour
 
         switch (DayOfTheWeek())
         {
-            case "Monday":
+            case "Saturday":
                 if (game.eventsGroup.gameObject.activeSelf)
                     RunEventUI(0);
                 break;
@@ -90,7 +90,7 @@ public class EventManager : MonoBehaviour
     {
         switch (DayOfTheWeek())
         {
-            case "Monday": return 0;
+            case "Saturday": return 0;
             case "Tuesday": return 1;
         }
         return 0;
@@ -100,10 +100,10 @@ public class EventManager : MonoBehaviour
     {
         switch (id)
         {
-            case 1:
+            case 0:
                 currencies[id] += 1 + levels[id];
                 break;
-            case 2:
+            case 1:
                 currencies[id] += 1;
                 break;
         }
@@ -132,7 +132,7 @@ public class EventManager : MonoBehaviour
             levels[id2] = 0;
         }
         else if (now.Hour == 23 & now.Minute >= 55 & data.eventActiveID == 0) ;
-        else if (data.eventCooldown[id2] > 0 & data.eventActiveID == 0);
+        else if (data.eventCooldown[id2] > 0 & data.eventActiveID == 0) ;
         else // Exit
             CompleteEvent(id2);
     }
@@ -142,7 +142,7 @@ public class EventManager : MonoBehaviour
         var data = game.data;
 
         data.eventTokens *= reward[id];
-        eventRewardText.text = $"+{reward[id]} Event Tokens";
+        eventRewardText.text = $"+{game.NotationMethod(reward[id], "F2")} Event Tokens";
 
         currencies[id] = 0;
         levels[id] = 0;
@@ -168,19 +168,17 @@ public class EventManager : MonoBehaviour
             else
                 events[i].gameObject.SetActive(false);
 
+        var time = TimeSpan.FromSeconds(data.eventCooldown[id]);
         if (data.eventActiveID == 0)
-        {
-            var time = TimeSpan.FromSeconds(data.eventCooldown[id]);
             startText[id].text = data.eventCooldown[id] > 0 ? time.ToString(@"hh\:mm\:ss") : "Start Event";
-        }
         else
-            startText[id].text = "Start Event";
+            startText[id].text = $"Start Event({time:hh\\:mm\\:ss})";
 
         if (data.eventActiveID != id + 1) return;
         eventsUnlocked[id].gameObject.SetActive(true);
-        rewardText[id].text = $"+{reward[id]} Event Tokens";
-        currencyText[id].text = $"{currencies[id]} Currency";
-        costText[id].text = $"Cost: {costs[id]}";
+        rewardText[id].text = $"+{game.NotationMethod(reward[id], "F2")} Event Tokens";
+        currencyText[id].text = $"{game.NotationMethod(currencies[id], "F2")} Currency";
+        costText[id].text = $"Cost: {game.NotationMethod(costs[id], "F2")}";
 
     }
 

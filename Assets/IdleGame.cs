@@ -13,7 +13,6 @@ public class PlayerData
     public BigDouble coins;
     public BigDouble coinsCollected;
     public BigDouble coinsClickValue;
-    public BigDouble coinsPerSecond;
     public int clickUpgrade1Level;
     public int clickUpgrade2Level;
     //public int clickUpgrade2Cost;
@@ -23,7 +22,6 @@ public class PlayerData
     public BigDouble productionUpgrade2Power;
     //public BigDouble productionUpgrade2Cost;
     public BigDouble gems;
-    public BigDouble gemBoost;
     public BigDouble gemsToGet;
     public float achLevel1;
     public float achLevel2;
@@ -33,6 +31,13 @@ public class PlayerData
     public float[] eventCooldown = new float[7];
     public int eventActiveID;
 
+    #region Prestige
+    public int prestigeUlevel1;
+    public int prestigeUlevel2;
+    public int prestigeUlevel3;
+    #endregion
+
+
     public PlayerData() 
     { 
          FullReset();
@@ -41,15 +46,13 @@ public class PlayerData
     {
         coins = 0;
         coinsCollected = 0;
-        coinsPerSecond = 0;
         coinsClickValue = 1;
-        productionUpgrade2Power = 5;
+        productionUpgrade2Power = 0;
         productionUpgrade1Level = 0;
         productionUpgrade2Level = 0;
         clickUpgrade1Level = 0;
         clickUpgrade2Level = 0;
         gems = 0;
-        gemBoost = 1;
         gemsToGet = 0;
 
         achLevel1= 0;
@@ -66,6 +69,12 @@ public class IdleGame : MonoBehaviour
 {
     public PlayerData data;
     public EventManager events;
+    public PrestigeManager prestige;
+
+    public GameObject clickUpgrade1;
+    public GameObject clickUpgrade2;
+    public GameObject productionUpgrade1;
+    public GameObject productionUpgrade2;
 
     // Texts
     public Text coinsText;
@@ -108,7 +117,6 @@ public class IdleGame : MonoBehaviour
     public GameObject achievementScreen;
     public List<Achievement> achievementList = new List<Achievement>();
 
-
     public void Start()
     {
         Application.targetFrameRate = 60;
@@ -116,40 +124,39 @@ public class IdleGame : MonoBehaviour
         foreach (var x in achievementScreen.GetComponentsInChildren<Achievement>())
             achievementList.Add(x);
 
-        mainMenuGroup.gameObject.SetActive(true);
-        upgradesGroup.gameObject.SetActive(true);
+        //mainMenuGroup.gameObject.SetActive(true);
+        //upgradesGroup.gameObject.SetActive(true);
         
         tabSwitcher = 0;
 
         SaveSystem.LoadPlayer(ref data);
         events.StartEvents();
+        prestige.StartPrestige();
     }
-
 
 
     public void Update()
     {
         RunAchievements();
+        prestige.Run();
 
         SmoothNumber(ref coinsTemp, data.coins);
-        BigDoubleFill(data.coins, clickCost1, clickUpgrade1Bar);
-        BigDoubleFill(coinsTemp, clickCost1, clickUpgrade1BarSmooth);
+        Methods.BigDoubleFill(data.coins, clickCost1, clickUpgrade1Bar);
+        Methods.BigDoubleFill(coinsTemp, clickCost1, clickUpgrade1BarSmooth);
 
         // The Higer the > 1e15 is the longer it takes to ear peels
         data.gemsToGet = 150 * Sqrt(data.coins / 1e7);
-        data.gemBoost = (data.gems * 0.05) + 1; //0.02
-        data.coinsPerSecond = (data.productionUpgrade1Level + (data.productionUpgrade2Power * data.productionUpgrade2Level)) * data.gemBoost * events.eventTokenBoost;
 
         coinsText.text = "$" + NotationMethod(data.coins, "F0");
-        coinsPerSecText.text = "$" + NotationMethod(data.coinsPerSecond, "F0") + "/s";
+        coinsPerSecText.text = "$" + NotationMethod(TotalCoinsPerSecond(), "F0") + "/s";
 
         gemsText.text = "Gems: " + Floor(data.gems).ToString("F0");
-        gemsBoostText.text = data.gemBoost.ToString("F2") + "x boost";
+        gemsBoostText.text = TotalGemBoost().ToString("F2") + "x boost";
 
         if (mainMenuGroup.gameObject.activeSelf)
         {
             gemsToGetText.text = "Prestige:\n+" + Floor(data.gemsToGet).ToString("F0") + " Gems";
-            clickValueText.text = "Collect\n+" + NotationMethod(data.coinsClickValue, "F0") + " Money";
+            clickValueText.text = "Collect\n+" + NotationMethod(TotalClickValue(), "F0") + " Money";
         }
         // Click Upgrade Exponant Starts
         if (upgradesGroup.gameObject.activeSelf)
@@ -174,10 +181,15 @@ public class IdleGame : MonoBehaviour
             clickUpgrade1MaxText.text = "Buy Max (" + BuyClickUpgrade1MaxCount() + ")";
             clickUpgrade2MaxText.text = "Buy Max (" + BuyClickUpgrade2MaxCount() + ")";
 
-            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + (data.gemBoost * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
-            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * data.gemBoost * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
+            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + (TotalGemBoost() * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
+            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * TotalGemBoost() * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
             productionUpgrade1MaxText.text = BuyMaxFormat(BuyProductionUpgrade1MaxCount());
             productionUpgrade2MaxText.text = BuyMaxFormat(BuyProductionUpgrade2MaxCount());
+
+            clickUpgrade1.gameObject.SetActive(data.coinsCollected >= 5);
+            clickUpgrade2.gameObject.SetActive(data.coinsCollected >= 25);
+            productionUpgrade1.gameObject.SetActive(data.coinsCollected >= 15);
+            productionUpgrade2.gameObject.SetActive(data.coinsCollected >= 250);
         }
 
         string BuyMaxFormat(BigDouble x)
@@ -186,7 +198,8 @@ public class IdleGame : MonoBehaviour
         }
         
         // Production Upgrade Exponants End
-        data.coins += data.coinsPerSecond * Time.deltaTime;
+        data.coins += TotalCoinsPerSecond() * Time.deltaTime;
+        data.coinsCollected += TotalCoinsPerSecond() * Time.deltaTime;
 
         saveTimer += Time.deltaTime;
 
@@ -216,28 +229,14 @@ public class IdleGame : MonoBehaviour
             title.text = $"{name}\n({level})";
             progress.text = $"{NotationMethod(number, "F2")} / {NotationMethod(cap, "F2")}";
 
-            BigDoubleFill(number, cap, fill);
+            Methods.BigDoubleFill(number, cap, fill);
         }
-
 
         if (number < cap) return;
         BigDouble levels = 0;
         if (number / cap >= 1)
             levels = Floor(Log10(number / cap)) + 1;
         level += (float)levels;
-    }
-
-    public void BigDoubleFill(BigDouble x, BigDouble y, Image fill)
-    {
-        float z;
-        var a = x / y;
-        if (a < 0.001)
-            z = 0;
-        else if (a > 10)
-            z = 1;
-        else
-            z = (float)a.ToDouble();
-        fill.fillAmount = z;
     }
 
     public void SmoothNumber(ref BigDouble smooth, BigDouble actual)
@@ -282,11 +281,38 @@ public class IdleGame : MonoBehaviour
             data.gems += data.gemsToGet;
         }
     }
+    public BigDouble TotalGemBoost()
+    {
+        var temp = data.gems;
+
+        temp *= 0.05 + prestige.levels[2] * 0.01;
+        return temp + 1;
+    }
+
+    private BigDouble TotalCoinsPerSecond()
+    {
+        BigDouble temp = 0;
+        temp += data.productionUpgrade1Level;
+        temp += data.productionUpgrade2Power * data.productionUpgrade2Level;
+        temp *= TotalGemBoost();
+        temp *= events.eventTokenBoost;
+        temp *= Pow(1.1, prestige.levels[1]);
+        return temp;
+    }
+    private BigDouble TotalClickValue()
+    {
+        var temp = data.coinsClickValue;
+        temp *= TotalGemBoost();
+        temp *= events.eventTokenBoost;
+        temp *= Pow(1.5, prestige.levels[0]);
+        return temp;
+    }
+
     // Кнопки
     public void Click()
     {
-        data.coins += data.coinsClickValue * events.eventTokenBoost;
-        data.coinsCollected += data.coinsClickValue * events.eventTokenBoost;
+        data.coins += TotalClickValue();
+        data.coinsCollected += TotalClickValue();
     }
 
     public void BuyUpgrade(string upgradeID)
@@ -396,7 +422,6 @@ public class IdleGame : MonoBehaviour
         {
             data.productionUpgrade1Level += (int)n;
             data.coins -= cost;
-            data.coinsPerSecond += n;
         }
     }
     public BigDouble BuyProductionUpgrade1MaxCount()
@@ -421,7 +446,6 @@ public class IdleGame : MonoBehaviour
         {
             data.productionUpgrade2Level += (int)n;
             data.coins -= cost;
-            data.coinsPerSecond += n;
         }
     }
     public BigDouble BuyProductionUpgrade2MaxCount()
@@ -482,5 +506,18 @@ public class Methods : MonoBehaviour
         y.alpha = x ?1 : 0;
         y.interactable = x;
         y.blocksRaycasts = x;
+    }
+
+    public static void BigDoubleFill(BigDouble x, BigDouble y, Image fill)
+    {
+        float z;
+        var a = x / y;
+        if (a < 0.001)
+            z = 0;
+        else if (a > 10)
+            z = 1;
+        else
+            z = (float)a.ToDouble();
+        fill.fillAmount = z;
     }
 }
