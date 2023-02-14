@@ -3516,7 +3516,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: upgrades
+          m_StringArgument: prestige
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &548173996
@@ -4334,9 +4334,6 @@ MonoBehaviour:
     coinsClickValue:
       mantissa: 1
       exponent: 0
-    coinsPerSecond:
-      mantissa: 0
-      exponent: 0
     clickUpgrade1Level: 0
     clickUpgrade2Level: 0
     productionUpgrade1Level: 0
@@ -4345,9 +4342,6 @@ MonoBehaviour:
       mantissa: 0
       exponent: 0
     gems:
-      mantissa: 0
-      exponent: 0
-    gemBoost:
       mantissa: 0
       exponent: 0
     gemsToGet:
@@ -4367,7 +4361,11 @@ MonoBehaviour:
     - 0
     - 0
     eventActiveID: 0
+    prestigeUlevel1: 0
+    prestigeUlevel2: 0
+    prestigeUlevel3: 0
   events: {fileID: 179169428}
+  prestige: {fileID: 872092833}
   clickUpgrade1: {fileID: 932181693}
   clickUpgrade2: {fileID: 1071137736}
   productionUpgrade1: {fileID: 1029752534}
@@ -4881,23 +4879,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d615d20fd8de9474885705bb6ec1e85e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  game: {fileID: 0}
-  prestige: {fileID: 0}
+  game: {fileID: 781488155}
+  prestige: {fileID: 595324684}
   costText:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 267762429}
+  - {fileID: 1142267164}
+  - {fileID: 1603368591}
   costBars:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1247871549}
+  - {fileID: 425801710}
+  - {fileID: 1885566879}
+  costBarsSmooth:
+  - {fileID: 2064220924}
+  - {fileID: 1138668340}
+  - {fileID: 674717159}
   costDesc:
   - 
   costs: []
   levels: 
-  level1: 0
-  level2: 0
-  level3: 0
+  gemsTemp:
+    mantissa: 0
+    exponent: 0
 --- !u!1 &883687173
 GameObject:
   m_ObjectHideFlags: 0
@@ -5302,10 +5304,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 781488155}
-        m_TargetAssemblyTypeName: IdleGame, Assembly-CSharp
+      - m_Target: {fileID: 872092833}
+        m_TargetAssemblyTypeName: PrestigeManager, Assembly-CSharp
         m_MethodName: BuyUpgrade
-        m_Mode: 5
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -7508,14 +7510,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 781488155}
-        m_TargetAssemblyTypeName: IdleGame, Assembly-CSharp
+      - m_Target: {fileID: 872092833}
+        m_TargetAssemblyTypeName: PrestigeManager, Assembly-CSharp
         m_MethodName: BuyUpgrade
-        m_Mode: 5
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: P1
           m_BoolArgument: 0
@@ -11564,14 +11566,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 781488155}
-        m_TargetAssemblyTypeName: IdleGame, Assembly-CSharp
+      - m_Target: {fileID: 872092833}
+        m_TargetAssemblyTypeName: PrestigeManager, Assembly-CSharp
         m_MethodName: BuyUpgrade
-        m_Mode: 5
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: C2
           m_BoolArgument: 0

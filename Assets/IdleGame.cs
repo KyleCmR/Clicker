@@ -126,6 +126,7 @@ public class IdleGame : MonoBehaviour
 
         //mainMenuGroup.gameObject.SetActive(true);
         //upgradesGroup.gameObject.SetActive(true);
+        //prestige.presitge.gameObject.SetActive(false);
         
         tabSwitcher = 0;
 
@@ -140,9 +141,9 @@ public class IdleGame : MonoBehaviour
         RunAchievements();
         prestige.Run();
 
-        SmoothNumber(ref coinsTemp, data.coins);
-        Methods.BigDoubleFill(data.coins, clickCost1, clickUpgrade1Bar);
-        Methods.BigDoubleFill(coinsTemp, clickCost1, clickUpgrade1BarSmooth);
+        Methods.SmoothNumber(ref coinsTemp, data.coins);
+        Methods.BigDoubleFill(data.coins, clickCost1, ref clickUpgrade1Bar);
+        Methods.BigDoubleFill(coinsTemp, clickCost1, ref clickUpgrade1BarSmooth);
 
         // The Higer the > 1e15 is the longer it takes to ear peels
         data.gemsToGet = 150 * Sqrt(data.coins / 1e7);
@@ -181,8 +182,8 @@ public class IdleGame : MonoBehaviour
             clickUpgrade1MaxText.text = "Buy Max (" + BuyClickUpgrade1MaxCount() + ")";
             clickUpgrade2MaxText.text = "Buy Max (" + BuyClickUpgrade2MaxCount() + ")";
 
-            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + (TotalGemBoost() * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
-            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * TotalGemBoost() * events.eventTokenBoost).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
+            productionUpgrade1Text.text = "Production UPG 1\nCost: " + productionUpgrade1CostString + " Money\nPower: +" + (TotalBoost() * Pow(1.1, prestige.levels[1])).ToString("F2") + " coins/s\nLevel: " + productionUpgrade1LevelString;
+            productionUpgrade2Text.text = "Production UPG 2\nCost: " + productionUpgrade2CostString + " Money\nPower: +" + (data.productionUpgrade2Power * TotalBoost() * Pow(1.1, prestige.levels[1])).ToString("F2") + " coins/s\nLevel: " + productionUpgrade2LevelString;
             productionUpgrade1MaxText.text = BuyMaxFormat(BuyProductionUpgrade1MaxCount());
             productionUpgrade2MaxText.text = BuyMaxFormat(BuyProductionUpgrade2MaxCount());
 
@@ -229,7 +230,7 @@ public class IdleGame : MonoBehaviour
             title.text = $"{name}\n({level})";
             progress.text = $"{NotationMethod(number, "F2")} / {NotationMethod(cap, "F2")}";
 
-            Methods.BigDoubleFill(number, cap, fill);
+            Methods.BigDoubleFill(number, cap, ref fill);
         }
 
         if (number < cap) return;
@@ -237,20 +238,6 @@ public class IdleGame : MonoBehaviour
         if (number / cap >= 1)
             levels = Floor(Log10(number / cap)) + 1;
         level += (float)levels;
-    }
-
-    public void SmoothNumber(ref BigDouble smooth, BigDouble actual)
-    {
-        if (smooth > actual & actual == 0)
-            smooth -= (smooth - actual) / 10 + 0.1 * Time.deltaTime;
-        else if (Floor(smooth) < actual)
-            smooth += (actual - smooth) / 10 + 0.1 * Time.deltaTime;
-        else if (Floor(smooth) > actual)
-            smooth -= (smooth - actual) / 10 + 0.1 * Time.deltaTime;
-        else
-        {
-            smooth = actual;
-        }
     }
 
     public string NotationMethod(BigDouble x, string y)
@@ -281,7 +268,13 @@ public class IdleGame : MonoBehaviour
             data.gems += data.gemsToGet;
         }
     }
-    public BigDouble TotalGemBoost()
+    private BigDouble TotalBoost()
+    {
+        BigDouble temp = TotalGemBoost();
+        temp *= events.eventTokenBoost;
+        return temp;
+    }
+    private BigDouble TotalGemBoost()
     {
         var temp = data.gems;
 
@@ -294,7 +287,7 @@ public class IdleGame : MonoBehaviour
         BigDouble temp = 0;
         temp += data.productionUpgrade1Level;
         temp += data.productionUpgrade2Power * data.productionUpgrade2Level;
-        temp *= TotalGemBoost();
+        temp *= TotalBoost();
         temp *= events.eventTokenBoost;
         temp *= Pow(1.1, prestige.levels[1]);
         return temp;
@@ -302,7 +295,7 @@ public class IdleGame : MonoBehaviour
     private BigDouble TotalClickValue()
     {
         var temp = data.coinsClickValue;
-        temp *= TotalGemBoost();
+        temp *= TotalBoost();
         temp *= events.eventTokenBoost;
         temp *= Pow(1.5, prestige.levels[0]);
         return temp;
@@ -474,6 +467,9 @@ public class IdleGame : MonoBehaviour
             case "events":
                 eventsGroup.gameObject.SetActive(true);
                 break;
+            case "prestige":
+                prestige.prestige.gameObject.SetActive(true);
+                break;
         }
         void DisableAll()
         {
@@ -481,6 +477,7 @@ public class IdleGame : MonoBehaviour
             upgradesGroup.gameObject.SetActive(false);
             achievementsGroup.gameObject.SetActive(false);
             eventsGroup.gameObject.SetActive(false);
+            prestige.prestige.gameObject.SetActive(false);
         }
     }
     public void FullReset()
@@ -508,7 +505,7 @@ public class Methods : MonoBehaviour
         y.blocksRaycasts = x;
     }
 
-    public static void BigDoubleFill(BigDouble x, BigDouble y, Image fill)
+    public static void BigDoubleFill(BigDouble x, BigDouble y, ref Image fill)
     {
         float z;
         var a = x / y;
@@ -519,5 +516,18 @@ public class Methods : MonoBehaviour
         else
             z = (float)a.ToDouble();
         fill.fillAmount = z;
+    }
+    public static void SmoothNumber(ref BigDouble smooth, BigDouble actual)
+    {
+        if (smooth > actual & actual == 0)
+            smooth -= (smooth - actual) / 10 + 0.1 * Time.deltaTime;
+        else if (Floor(smooth) < actual)
+            smooth += (actual - smooth) / 10 + 0.1 * Time.deltaTime;
+        else if (Floor(smooth) > actual)
+            smooth -= (smooth - actual) / 10 + 0.1 * Time.deltaTime;
+        else
+        {
+            smooth = actual;
+        }
     }
 }

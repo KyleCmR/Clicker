@@ -11,6 +11,7 @@ public class PrestigeManager : MonoBehaviour
 
     public Text[] costText = new Text[3];
     public Image[] costBars = new Image[3];
+    public Image[] costBarsSmooth = new Image[3];
 
     public string[] costDesc = { "" };
 
@@ -21,6 +22,8 @@ public class PrestigeManager : MonoBehaviour
     public BigDouble cost1 => 5 * BigDouble.Pow(1.5, game.data.prestigeUlevel1);
     public BigDouble cost2 => 10 * BigDouble.Pow(1.5, game.data.prestigeUlevel2);
     public BigDouble cost3 => 100 * BigDouble.Pow(1.5, game.data.prestigeUlevel3);
+
+    public BigDouble gemsTemp;
 
     public void StartPrestige()
     {
@@ -37,10 +40,12 @@ public class PrestigeManager : MonoBehaviour
         void UI()
         {
             if (!prestige.gameObject.activeSelf) return;
-            for (int i = 0; i < costText.Length - 1; i++)
+            for (int i = 0; i < costText.Length; i++)
             {
-                costText[i].text = $"Level {levels[i]}\n{costDesc[i]}\nCost: {costs[i]} coins";
-                Methods.BigDoubleFill(game.data.gems, costs[i], costBars[i]);
+                costText[i].text = $"Level {levels[i]}\n{costDesc[i]}\nCost: {game.NotationMethod(costs[i], "F2")} coins";
+                Methods.SmoothNumber(ref gemsTemp, game.data.gems);
+                Methods.BigDoubleFill(game.data.gems, costs[i], ref costBars[i]);
+                Methods.BigDoubleFill(gemsTemp, costs[i], ref costBarsSmooth[i]);
             }
         }
     }
@@ -50,20 +55,20 @@ public class PrestigeManager : MonoBehaviour
         
         switch (id)
         {
-            case 1:
+            case 0:
                 Buy(ref data.prestigeUlevel1);
                 break;
-            case 2:
+            case 1:
                 Buy(ref data.prestigeUlevel2);
                 break;
-            case 3:
+            case 2:
                 Buy(ref data.prestigeUlevel3);
                 break;
         }
 
         void Buy(ref int level)
         {
-            if (data.gems >= costs[id]) return;
+            if (data.gems < costs[id]) return;
             data.gems -= costs[id];
             level++;
         }
